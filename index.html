@@ -5,17 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tennis Voice Control</title>
   <style>
-    body{margin:0;display:grid;place-items:center;min-height:100vh;background:#111;color:#eee;font-family:sans-serif}
-    .game{position:relative;width:720px;height:400px;background:linear-gradient(#0e7a3a,#0a5a2b);border:3px solid #fff;border-radius:12px;overflow:hidden}
-    .paddle{position:absolute;width:12px;height:80px;background:#eee;left:20px;top:50%;transform:translateY(-50%);border-radius:6px}
-    .ball{position:absolute;width:16px;height:16px;border-radius:50%;background:#ffd200;left:50%;top:50%;transform:translate(-50%,-50%)}
-    .score{position:absolute;top:10px;right:10px;font-size:1.2rem;font-weight:bold}
+    body{
+      margin:0;
+      display:grid;
+      place-items:center;
+      min-height:100vh;
+      background:#111;
+      color:#eee;
+      font-family:sans-serif
+    }
+    .game{
+      position:relative;
+      width:720px;
+      height:400px;
+      background:linear-gradient(#0e7a3a,#0a5a2b);
+      border:3px solid #fff;
+      border-radius:12px;
+      overflow:hidden
+    }
+    .paddle{
+      position:absolute;
+      width:12px;
+      height:80px;
+      background:#eee;
+      left:20px;
+      top:50%;
+      transform:translateY(-50%);
+      border-radius:6px
+    }
+    .ball{
+      position:absolute;
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:#ffd200;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%)
+    }
+    .score{
+      position:absolute;
+      top:10px;
+      right:10px;
+      font-size:1.2rem;
+      font-weight:bold
+    }
+    button{
+      margin:10px 0;
+      padding:8px 16px;
+      font-size:1rem;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
   <div>
     <h2>🎤 Tennis Voice Control</h2>
-    <button type="button" onclick="initVoice()">شروع تشخیص صدا</button>
+    <button type="button" onclick="ensureMicThenInit()">شروع تشخیص صدا</button>
     <div id="label-container"></div>
   </div>
 
@@ -79,8 +125,8 @@
     }
     update();
 
-    // 🎤 Voice Recognition with Teachable Machine
-    const URL = "./my_model/"; // مسیر مدل آموزش‌داده‌شده‌ی خودت
+    // 🎤 Voice Recognition
+    const URL = "./"; // مدل کنار index.html است
 
     async function createModel() {
       const checkpointURL = URL + "model.json";
@@ -107,7 +153,6 @@
           labelContainer.childNodes[i].innerHTML = classPrediction;
         }
 
-        // اگر یکی از کلمات «up» یا «down» باشه → paddle حرکت کنه
         const maxIndex = scores.indexOf(Math.max(...scores));
         const command = classLabels[maxIndex];
         if(scores[maxIndex] > 0.75){
@@ -116,6 +161,21 @@
         }
 
       }, { probabilityThreshold: 0.75 });
+    }
+
+    // 🎤 اطمینان از دسترسی میکروفن قبل از init
+    async function ensureMicThenInit(){
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        alert('مرورگر شما از میکروفن پشتیبانی نمی‌کند.');
+        return;
+      }
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch(err){
+        alert('لطفاً اجازه‌ی دسترسی به میکروفن را بدهید تا کنترل صوتی کار کند.');
+        return;
+      }
+      initVoice();
     }
   </script>
 </body>
