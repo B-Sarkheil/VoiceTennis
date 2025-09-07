@@ -173,7 +173,7 @@
 
         const maxIndex = scores.indexOf(Math.max(...scores));
         const command = classLabels[maxIndex];
-        if(scores[maxIndex] > 0.75){
+        if(scores[maxIndex] > 0.5){
           if(command === 'Up'){ movePaddle('up'); }
           if(command === 'Down'){ movePaddle('down'); }
         }
