@@ -1,81 +1,90 @@
 ﻿<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tennis Voice & Keyboard Control</title>
-  <style>
-    body{
-      margin:0;
-      display:grid;
-      place-items:center;
-      min-height:100vh;
-      background:#111;
-      color:#eee;
-      font-family:sans-serif
-    }
-    .game{
-      position:relative;
-      width:720px;
-      height:400px;
-      background:linear-gradient(#0e7a3a,#0a5a2b);
-      border:3px solid #fff;
-      border-radius:12px;
-      overflow:hidden
-    }
-    .paddle{
-      position:absolute;
-      width:12px;
-      height:80px;
-      background:#eee;
-      left:20px;
-      top:50%;
-      transform:translateY(-50%);
-      border-radius:6px
-    }
-    .ball{
-      position:absolute;
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      background:#ffd200;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%)
-    }
-    .score{
-      position:absolute;
-      top:10px;
-      right:10px;
-      font-size:1.2rem;
-      font-weight:bold
-    }
-    button{
-      margin:10px 0;
-      padding:8px 16px;
-      font-size:1rem;
-      cursor:pointer;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tennis Voice & Keyboard Control</title>
+    <style>
+        body {
+            margin: 0;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            background: #111;
+            color: #eee;
+            font-family: sans-serif;
+        }
+
+        .game {
+            position: relative;
+            width: 720px;
+            height: 400px;
+            background: linear-gradient(#0e7a3a,#0a5a2b);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .paddle {
+            position: absolute;
+            width: 12px;
+            height: 80px;
+            background: #eee;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 6px;
+        }
+
+        .ball {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffd200;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%,-50%);
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        button {
+            margin: 10px 0;
+            padding: 8px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        #status {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #ffd200;
+        }
+    </style>
 </head>
 <body>
-  <div>
-    <h2>🎤🎮 Tennis Voice & Keyboard Control</h2>
-    <button type="button" onclick="ensureMicThenInit()">شروع تشخیص صدا</button>
-    <div id="label-container"></div>
-  </div>
-
-  <div class="game" id="game">
-    <div class="paddle" id="paddle"></div>
-    <div class="ball" id="ball"></div>
-    <div class="score" id="score">0</div>
-  </div>
-
-  <!-- Tensorflow & Teachable Machine -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
-
-  <script>
+    <div>
+        <h2>🎤🎮 Tennis Voice & Keyboard Control</h2>
+        <button type="button" onclick="ensureMicThenInit()">شروع تشخیص صدا</button>
+        <div id="status"></div>
+        <div id="label-container"></div>
+    </div>
+    <div class="game" id="game">
+        <div class="paddle" id="paddle"></div>
+        <div class="ball" id="ball"></div>
+        <div class="score" id="score">0</div>
+    </div>
+    <!-- Tensorflow & Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <script>
     const game = document.getElementById('game');
     const paddle = document.getElementById('paddle');
     const ball = document.getElementById('ball');
@@ -143,13 +152,18 @@
     update();
 
     // 🎤 Voice Recognition
-    const URL = "https://b-sarkheil.github.io/VoiceTennis/"; 
+    const URL = "https://b-sarkheil.github.io/VoiceTennis/";
 
     async function createModel() {
+        document.getElementById("status").innerText = "⏳ مدل در حال بارگذاری است... لطفاً صبر کنید.";
+
         const checkpointURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
         const recognizer = speechCommands.create("BROWSER_FFT", undefined, checkpointURL, metadataURL);
         await recognizer.ensureModelLoaded();
+
+        document.getElementById("status").innerText = "✅ مدل بارگذاری شد! حالا صحبت کنید.";
+
         console.log("Model loaded!");
         return recognizer;
     }
@@ -162,8 +176,8 @@
 
       for (let i = 0; i < classLabels.length; i++) {
         labelContainer.appendChild(document.createElement("div"));
-      }     
-      
+      }
+
       recognizer.listen(result => {
         const scores = result.scores;
         for (let i = 0; i < classLabels.length; i++) {
@@ -194,6 +208,6 @@
       }
       initVoice();
     }
-  </script>
+    </script>
 </body>
 </html>
