@@ -143,7 +143,7 @@
     update();
 
     // 🎤 Voice Recognition
-    const URL = "https://b-sarkheil.github.io/VoiceTennis/"; // مسیر پوشه مدل خودت
+    const URL = "https://b-sarkheil.github.io/VoiceTennis/"; 
 
     async function createModel() {
         const checkpointURL = URL + "model.json";
@@ -162,12 +162,7 @@
 
       for (let i = 0; i < classLabels.length; i++) {
         labelContainer.appendChild(document.createElement("div"));
-      }
-
-      recognizer.listen(result => {
-          console.log(result.scores);  // ببین آیا تغییر می‌کنه
-      }, { probabilityThreshold: 0.1 });
-      
+      }     
       
       recognizer.listen(result => {
         const scores = result.scores;
@@ -178,7 +173,7 @@
 
         const maxIndex = scores.indexOf(Math.max(...scores));
         const command = classLabels[maxIndex];
-        if(scores[maxIndex] > 0.7){
+        if(scores[maxIndex] > 0.75){
           if(command === 'Up'){ movePaddle('up'); }
           if(command === 'Down'){ movePaddle('down'); }
         }
