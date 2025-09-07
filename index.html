@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tennis Voice Control</title>
+  <title>Tennis Voice & Keyboard Control</title>
   <style>
     body{
       margin:0;
@@ -60,7 +60,7 @@
 </head>
 <body>
   <div>
-    <h2>🎤 Tennis Voice Control</h2>
+    <h2>🎤🎮 Tennis Voice & Keyboard Control</h2>
     <button type="button" onclick="ensureMicThenInit()">شروع تشخیص صدا</button>
     <div id="label-container"></div>
   </div>
@@ -87,6 +87,7 @@
     let ballSpeedX = 3;
     let ballSpeedY = 2;
     let score = 0;
+    let animationId = null;
 
     function movePaddle(dir){
       if(dir === 'up') paddleY -= 20;
@@ -95,6 +96,12 @@
       if(paddleY > game.clientHeight - paddle.offsetHeight) paddleY = game.clientHeight - paddle.offsetHeight;
       paddle.style.top = paddleY + 'px';
     }
+
+    // 🎮 کنترل پدل با کیبورد
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowUp') movePaddle('up');
+      if(e.key === 'ArrowDown') movePaddle('down');
+    });
 
     function update(){
       ballX += ballSpeedX;
@@ -112,28 +119,39 @@
           score++;
           scoreEl.textContent = score;
         } else {
+          cancelAnimationFrame(animationId); // توقف توپ
           alert('Game Over! امتیاز شما: ' + score);
-          score = 0; scoreEl.textContent = score;
-          ballX = game.clientWidth/2; ballY = game.clientHeight/2;
-          ballSpeedX = 3; ballSpeedY = 2;
+          resetGame();
         }
       }
 
       ball.style.left = ballX + 'px';
       ball.style.top = ballY + 'px';
-      requestAnimationFrame(update);
+      animationId = requestAnimationFrame(update);
     }
+
+    function resetGame(){
+      score = 0;
+      scoreEl.textContent = score;
+      ballX = game.clientWidth/2;
+      ballY = game.clientHeight/2;
+      ballSpeedX = 3;
+      ballSpeedY = 2;
+      animationId = requestAnimationFrame(update);
+    }
+
     update();
 
     // 🎤 Voice Recognition
-    const URL = "./"; // مدل کنار index.html است
+    const URL = "./"; // مسیر پوشه مدل خودت
 
     async function createModel() {
-      const checkpointURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
-      const recognizer = speechCommands.create("BROWSER_FFT", undefined, checkpointURL, metadataURL);
-      await recognizer.ensureModelLoaded();
-      return recognizer;
+        const checkpointURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+        const recognizer = speechCommands.create("BROWSER_FFT", undefined, checkpointURL, metadataURL);
+        await recognizer.ensureModelLoaded();
+        console.log("Model loaded!");
+        return recognizer;
     }
 
     async function initVoice() {
@@ -147,6 +165,11 @@
       }
 
       recognizer.listen(result => {
+          console.log(result.scores);  // ببین آیا تغییر می‌کنه
+      }, { probabilityThreshold: 0.1 });
+      
+      
+      recognizer.listen(result => {
         const scores = result.scores;
         for (let i = 0; i < classLabels.length; i++) {
           const classPrediction = classLabels[i] + ": " + scores[i].toFixed(2);
@@ -155,15 +178,14 @@
 
         const maxIndex = scores.indexOf(Math.max(...scores));
         const command = classLabels[maxIndex];
-        if(scores[maxIndex] > 0.75){
-          if(command === 'up'){ movePaddle('up'); }
-          if(command === 'down'){ movePaddle('down'); }
+        if(scores[maxIndex] > 0.2){
+          if(command === 'Up'){ movePaddle('up'); }
+          if(command === 'Down'){ movePaddle('down'); }
         }
 
       }, { probabilityThreshold: 0.75 });
     }
 
-    // 🎤 اطمینان از دسترسی میکروفن قبل از init
     async function ensureMicThenInit(){
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
         alert('مرورگر شما از میکروفن پشتیبانی نمی‌کند.');
